@@ -299,6 +299,7 @@
             vigenere: "Vigenère Cipher: Menggunakan kata kunci untuk enkripsi substitusi. Lebih kompleks dibanding Caesar Cipher.",
             octal: "Octal Encoding: Mengkonversi teks menjadi representasi oktal dari setiap byte."
         };
+
         function processCipher(isEncrypt) {
             const method = document.getElementById('cipher-method').value;
             const text = document.getElementById('cipher-text').value;
@@ -346,11 +347,13 @@
                 console.error(e);
             }
         }
+
         function updateCipher() {
             const mode = document.getElementById('cipher-mode').value;
             const isEncrypt = mode === 'encrypt';
             processCipher(isEncrypt);
         }
+
         document.getElementById('cipher-text').addEventListener('input', updateCipher);
         document.getElementById('cipher-key').addEventListener('input', updateCipher);
         document.getElementById('cipher-mode').addEventListener('change', updateCipher);
@@ -368,6 +371,7 @@
             }
             updateCipher();
         });
+
         document.getElementById('file-input').addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file && file.type === "text/plain") {
@@ -381,23 +385,32 @@
                 console.error('Hanya file TXT yang didukung');
             }
         });
+
+        // Perbaikan tombol download: menambahkan delay sebelum URL di-revoke
         document.getElementById('download-btn').addEventListener('click', function () {
             const result = document.getElementById('cipher-result').value;
             if (result) {
                 const blob = new Blob([result], { type: 'text/plain' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
+                a.style.display = 'none';
                 a.href = url;
                 a.download = `cipher_result_${new Date().getTime()}.txt`;
                 document.body.appendChild(a);
                 a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
+                // Memberikan delay agar browser sempat memulai download sebelum URL di-revoke
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                }, 100);
             }
         });
+
+        // Jika hasil dihapus, tombol download dinonaktifkan
         document.getElementById('cipher-result').addEventListener('input', function () {
             document.getElementById('download-btn').disabled = !this.value;
         });
+
         function xorCipher(input, key, encrypt) {
             const encoder = new TextEncoder();
             const decoder = new TextDecoder();
@@ -419,6 +432,7 @@
                 return new TextDecoder().decode(output);
             }
         }
+
         function reverseAlphabet(text) {
             return text.split('').map(c => {
                 const code = c.charCodeAt(0);
@@ -431,6 +445,7 @@
                 return c;
             }).join('');
         }
+
         function caesarCipher(text, shift, encrypt) {
             if (!encrypt) shift = -shift;
             return text.split('').map(c => {
@@ -443,13 +458,16 @@
                 return String.fromCharCode(code);
             }).join('');
         }
+
         function textToHex(text) {
             return Array.from(new TextEncoder().encode(text)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
+
         function hexToText(hex) {
             const bytes = new Uint8Array(hex.match(/[\da-f]{2}/gi).map(h => parseInt(h, 16)));
             return new TextDecoder().decode(bytes);
         }
+
         function vigenereCipher(text, key, encrypt) {
             let result = "";
             let j = 0;
@@ -475,15 +493,19 @@
             }
             return result;
         }
+
         function textToOctal(text) {
             return Array.from(new TextEncoder().encode(text)).map(b => b.toString(8).padStart(3, '0')).join('');
         }
+
         function octalToText(octal) {
             const matches = octal.match(/[0-7]{3}/g);
             if (!matches) return "";
             const bytes = new Uint8Array(matches.map(o => parseInt(o, 8)));
             return new TextDecoder().decode(bytes);
         }
+
+        // Set nilai default deskripsi metode
         document.getElementById('method-desc').textContent = methodDescriptions.xor;
     </script>
 </body>
